@@ -1,0 +1,125 @@
+{% extends 'halls/base.html' %}
+{% block content %}
+<div class="container">
+  <h2>Add Video to {{hall.title}}</h2>
+  <form method="post" id="submit_video">
+    {% csrf_token %}
+    {% load widget_tweaks %}
+
+    {% for field in form %}
+    <div class="form-group {% if field.errors %}alert alert-danger{% endif %}">
+      {{ field.errors }}
+      {{ field.label_tag }}
+      {% render_field field class="form-control" %}
+    </div>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-primary">Add</button>
+  </form>
+  <br>
+  <h2>OR</h2>
+  <form>
+    {% for field in search_form %}
+    <div class="form-group ">
+      {{ field.errors }}
+      {{ field.label_tag }}
+      {% render_field field class="form-control" %}
+    </div>
+    {% endfor %}
+  </form>
+
+  <!-- donde se va a poner todo lo de ajax que vuelva cuando tengamos
+  la respuesta -->
+
+  <div id="search_results">
+    <script>
+
+      var delayTimer;
+      /* agarramos el search form
+      inspeccionamos con el navegador si no sabemos */
+
+      /* keyup es cuando alguien presiona algo */
+      $("#id_search_term").keyup(function () {
+
+        /* cada vez que alguien teclea algo limpia el tiempo de 1000ms
+        osea si pasa 500ms y alguien teclea se recarga a 1000ms para que
+        recien ahi se ejecute la funcion, a 1000ms despues de la ultima tecla
+        presionada */
+        clearTimeout(delayTimer)
+
+        /* le hacemos saber que estamos buscando algo al user */
+        $("#search_results").text("Loading...")
+        delayTimer = setTimeout(function () {
+          var text = $('#id_search_term').val()
+
+          /* AJAX */
+
+          $.ajax({
+            /* vamos a esa pagina nuestra */
+            url: '/video/search',
+            data: {
+              "search_term": text
+            },
+
+            dataType: 'json',
+            success: function (data) {
+
+              var results = ""
+              $("#search_results").text("");
+
+              results += "<div class='row'>"
+              data["items"].forEach(function (video) {
+                results += "<div class='col-md-40 mt-3'> <div class='card mb-4 shadow-sm'>"
+                results += '<iframe width="100%" height="225" src="https://www.youtube.com/embed/' + video.id.videoId +
+                  '" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'
+                results += "<div class='card-body'><p class='card-text'>" + video.snippet.title + "</p>"
+                results += `<a href='#' class='btn btn-primary' onclick='addVideo("${video.id.videoId}")'>Add</a>`
+                results += "</div></div></div>"
+              })
+              results += "</div>"
+              $("#search_results").append(results)
+            }
+
+          })
+        }, 1000)
+
+      })
+
+
+      function addVideo(video_id) {
+        /* aca vamos a hacer que cuando hacemos click en un video
+        valla a input de arriba (id_url) y le pase el link
+        y despues simulamos como que le hacemos click nosotros */
+        $('#id_url').val('https://www.youtube.com/watch?v=' + video_id)
+
+        /* simulamos que hacemos click al form QUE LE AGREGAMOS NOSOTROS
+        EL ID */
+        $("#submit_video").submit()
+
+      }
+
+    </script>
+  </div>
+
+
+
+</div>
+{% endblock %}
+
+
+
+{% comment %} {{form.as_p}} {% endcomment %}
+
+{% comment %} vamos a ir manualmente con cada parametro {% endcomment %}
+
+{% comment %} {% for field in form %}
+<p>
+  {{field.errors}}
+  {{field.label_tag}}
+
+  {{field}}
+</p>
+{% endfor %}
+
+
+{% endcomment %}
