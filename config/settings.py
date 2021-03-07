@@ -27,7 +27,8 @@ SECRET_KEY = 'ebb4*&(=6vs#o(e9j39x-8!hzq4z4o8)58@-q0p@y92_p9n2h3'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['stark-earth-93151.herokuapp.com', '*']
+ALLOWED_HOSTS = ['stark-earth-93151.herokuapp.com',
+                 'halloffamevideos.herokuapp.com']
 
 
 # Application definition
